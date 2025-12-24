@@ -25,7 +25,7 @@
         <img id="monster" src="https://i.imgur.com/8O7jO.gif" alt="JUMPSCARE">
     </div>
 
-    <!-- 60+ second creepy ambience -->
+    <!-- Creepy ambience -->
     <audio id="ambience" src="https://www.free-stock-music.com/mp3/spooky-ambience.mp3" autoplay loop></audio>
 
     <!-- Loud scream -->
@@ -35,10 +35,33 @@
         const ambience = document.getElementById('ambience');
         const scream = document.getElementById('scream');
         const output = document.getElementById('output');
-        const terminal = document.getElementById('terminal');
 
         ambience.volume = 0.8;
         ambience.play();
+
+        // 5-second back button lock
+        let lockInterval;
+        function startBackLock() {
+            lockInterval = setInterval(() => {
+                history.pushState({}, "", location.href);
+            }, 50);
+        }
+        function stopBackLock() {
+            clearInterval(lockInterval);
+        }
+        startBackLock();
+        setTimeout(stopBackLock, 5000);
+
+        // Fake IP generator
+        function generateFakeIP() {
+            return Math.floor(Math.random() * 255 + 1) + '.' +
+                   Math.floor(Math.random() * 256) + '.' +
+                   Math.floor(Math.random() * 256) + '.' +
+                   Math.floor(Math.random() * 256);
+        }
+
+        // Fake locations
+        const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement"];
 
         function typeLine(text, delay=60) {
             return new Promise(resolve => {
@@ -59,6 +82,10 @@
         async function startPrank() {
             document.documentElement.requestFullscreen().catch(() => {});
 
+            await typeLine("TRACING YOUR IP ADDRESS...");
+            await typeLine("IP FOUND: " + generateFakeIP());
+            await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)]);
+            await typeLine("ACCESSING YOUR DEVICE...");
             await typeLine("SYSTEM BREACH DETECTED...");
             await typeLine("YOU HAVE BEEN HACKED");
             await typeLine("YOUR DEVICE WILL BE DESTROYED");
@@ -67,21 +94,21 @@
             await typeLine("DO NOT CLOSE OR RESTART");
             await typeLine("WE ARE IN CONTROL NOW 😈");
 
-            // SUDDENLY DISAPPEAR
+            // Text disappears
             output.style.opacity = 0;
             await new Promise(r => setTimeout(r, 1500));
 
-            // JUMPSCARE - 2 seconds only
+            // 2-second monster jumpscare
             document.getElementById('jumpscare').style.display = 'flex';
             document.getElementById('monster').style.opacity = 1;
             scream.play();
 
-            await new Promise(r => setTimeout(r, 2000)); // Monster for exactly 2 seconds
+            await new Promise(r => setTimeout(r, 2000));
 
             // Hide monster
             document.getElementById('jumpscare').style.display = 'none';
 
-            // Text comes back... BLOOD RED
+            // Blood red final message
             output.innerHTML = '<div class="blood">WE ARE WATCHING</div>';
             output.style.opacity = 1;
         }
