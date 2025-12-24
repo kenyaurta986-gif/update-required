@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Update Required</title>
+    <style>
+        body { margin:0; background:#000; color:#0f0; font-family: 'Courier New', monospace; overflow:hidden; }
+        #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; }
+        .line { opacity:0; animation: fadeIn 0.5s forwards; }
+        @keyframes fadeIn { to { opacity:1; } }
+        .progress { width:100%; background:#333; height:20px; margin:10px 0; }
+        .bar { height:100%; background:#0f0; width:0%; transition:width 1s; }
+        #countdown { font-size:50px; color:red; }
+    </style>
+</head>
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+    <div id="terminal">
+        <div id="output"></div>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div id="countdown"></div>
+    </div>
+
+    <script>
+        function typeLine(text, delay=50) {
+            return new Promise(resolve => {
+                let i = 0;
+                const div = document.createElement('div');
+                div.className = 'line';
+                document.getElementById('output').appendChild(div);
+                const interval = setInterval(() => {
+                    div.textContent += text[i];
+                    i++;
+                    if (i >= text.length) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, delay);
+            });
+        }
+
+        async function startPrank() {
+            // Go fullscreen
+            document.documentElement.requestFullscreen();
+
+            await typeLine("CONNECTION INTERCEPTED...");
+            await new Promise(r => setTimeout(r, 1500));
+            await typeLine("Unauthorized access detected.");
+            await new Promise(r => setTimeout(r, 2000));
+            await typeLine("YOU HAVE BEEN HACKED");
+            await typeLine("Thanks for clicking the site 😈");
+            await new Promise(r => setTimeout(r, 1500));
+            await typeLine("I now have FULL ACCESS to your device:");
+            await typeLine("- All passwords");
+            await typeLine("- Private photos & videos");
+            await typeLine("- Bank accounts");
+            await typeLine("- Webcam & microphone");
+            await typeLine("- Browser history & messages");
+            await new Promise(r => setTimeout(r, 2000));
+            await typeLine("ENCRYPTING YOUR FILES NOW...");
+            
+            const bar = document.getElementById('bar');
+            for (let p = 0; p <= 100; p += 10) {
+                bar.style.width = p + '%';
+                await typeLine("Encrypting drive... " + p + "% complete");
+                await new Promise(r => setTimeout(r, 1200));
+            }
+            
+            await typeLine("ENCRYPTION COMPLETE - Files locked forever.");
+            await new Promise(r => setTimeout(r, 2000));
+            await typeLine("PAY 1 BITCOIN IN 24 HOURS TO THIS WALLET:");
+            await typeLine("bc1qfakehackerwallet123example");
+            await typeLine("We are watching you. Do not restart.");
+            await new Promise(r => setTimeout(r, 3000));
+
+            // Countdown
+            let time = 30;
+            const cd = document.getElementById('countdown');
+            const timer = setInterval(() => {
+                cd.textContent = "DELETION IN: " + time + " SECONDS";
+                time--;
+                if (time < 0) {
+                    clearInterval(timer);
+                    cd.textContent = "TIME EXPIRED - ALL DATA DELETED";
+                    setTimeout(() => {
+                        window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+                    }, 3000);
+                }
+            }, 1000);
+        }
+
+        startPrank();
+    </script>
+</body>
+</html>
