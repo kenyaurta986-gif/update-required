@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>ERROR</title>
     <style>
-        body { margin:0; background:#000; color:#f00; font-family: 'Courier New', monospace; overflow:hidden; }
+        html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
+        body { color:#f00; font-family: 'Courier New', monospace; }
         #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; text-align:center; font-size:28px; animation: shake 0.5s infinite, rainbow 3s infinite; }
         @keyframes shake { 0%,100%{transform:translate(0);} 10%,30%,50%,70%,90%{transform:translate(-15px, -15px);} 20%,40%,60%,80%{transform:translate(15px, 15px);} }
         @keyframes rainbow { 0%{color:#f00;} 20%{color:#ff0;} 40%{color:#0f0;} 60%{color:#0ff;} 80%{color:#f0f;} 100%{color:#f00;} }
@@ -32,6 +35,13 @@
     <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio>
 
     <script>
+        // Hide browser UI (address bar, tabs) but keep phone status bar accessible
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                window.scrollTo(0, 1);
+            }, 100);
+        });
+
         const ambience = document.getElementById('ambience');
         const scream = document.getElementById('scream');
         const output = document.getElementById('output');
@@ -39,7 +49,7 @@
         ambience.volume = 0.8;
         ambience.play();
 
-        // 5-second back button lock
+        // 20-second back button lock
         let lockInterval;
         function startBackLock() {
             lockInterval = setInterval(() => {
@@ -50,18 +60,16 @@
             clearInterval(lockInterval);
         }
         startBackLock();
-        setTimeout(stopBackLock, 5000);
+        setTimeout(stopBackLock, 20000);
 
-        // Fake IP generator
+        // Fake IP & location
         function generateFakeIP() {
             return Math.floor(Math.random() * 255 + 1) + '.' +
                    Math.floor(Math.random() * 256) + '.' +
                    Math.floor(Math.random() * 256) + '.' +
                    Math.floor(Math.random() * 256);
         }
-
-        // Fake locations
-        const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement"];
+        const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement", "Your Exact Coordinates"];
 
         function typeLine(text, delay=60) {
             return new Promise(resolve => {
@@ -80,8 +88,6 @@
         }
 
         async function startPrank() {
-            document.documentElement.requestFullscreen().catch(() => {});
-
             await typeLine("TRACING YOUR IP ADDRESS...");
             await typeLine("IP FOUND: " + generateFakeIP());
             await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)]);
