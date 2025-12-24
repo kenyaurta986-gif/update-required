@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <title>ERROR</title>
+    <title></title>
     <style>
         html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
         body { color:#f00; font-family: 'Courier New', monospace; }
@@ -35,12 +35,15 @@
     <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio>
 
     <script>
-        // Hide browser UI (address bar, tabs) but keep phone status bar accessible
-        window.addEventListener("load", () => {
-            setTimeout(() => {
-                window.scrollTo(0, 1);
-            }, 100);
-        });
+        // Force fullscreen to hide browser bar
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) elem.requestFullscreen();
+            else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+            else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+        }
+        enterFullscreen();
+        window.onload = enterFullscreen;
 
         const ambience = document.getElementById('ambience');
         const scream = document.getElementById('scream');
@@ -49,18 +52,17 @@
         ambience.volume = 0.8;
         ambience.play();
 
-        // 20-second back button lock
-        let lockInterval;
-        function startBackLock() {
-            lockInterval = setInterval(() => {
-                history.pushState({}, "", location.href);
-            }, 50);
-        }
-        function stopBackLock() {
-            clearInterval(lockInterval);
-        }
-        startBackLock();
-        setTimeout(stopBackLock, 20000);
+        // 20-second back trap
+        let trapActive = true;
+        const trapInterval = setInterval(() => {
+            if (trapActive) history.pushState(null, null, location.href);
+        }, 50);
+        window.onpopstate = () => { if (trapActive) history.go(1); };
+        setTimeout(() => {
+            trapActive = false;
+            clearInterval(trapInterval);
+            window.onpopstate = null;
+        }, 20000);
 
         // Fake IP & location
         function generateFakeIP() {
@@ -71,7 +73,7 @@
         }
         const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement", "Your Exact Coordinates"];
 
-        function typeLine(text, delay=60) {
+        function typeLine(text, delay=70) {
             return new Promise(resolve => {
                 let i = 0;
                 const div = document.createElement('div');
@@ -81,7 +83,7 @@
                     i++;
                     if (i >= text.length) {
                         clearInterval(interval);
-                        setTimeout(resolve, 1000);
+                        setTimeout(resolve, 1200);
                     }
                 }, delay);
             });
@@ -91,30 +93,25 @@
             await typeLine("TRACING YOUR IP ADDRESS...");
             await typeLine("IP FOUND: " + generateFakeIP());
             await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)]);
-            await typeLine("ACCESSING YOUR DEVICE...");
-            await typeLine("SYSTEM BREACH DETECTED...");
             await typeLine("YOU HAVE BEEN HACKED");
-            await typeLine("YOUR DEVICE WILL BE DESTROYED");
-            await typeLine("DO NOT TRY RESETTING");
-            await typeLine("DO NOT BACK OUT OF THE WEBSITE");
-            await typeLine("DO NOT CLOSE OR RESTART");
-            await typeLine("WE ARE IN CONTROL NOW 😈");
+            await typeLine("I HAVE ALL YOUR INFORMATION");
+            await typeLine("AND ALL OF YOUR ACCOUNTS");
+            await typeLine("PAY 1 BITCOIN TO GET YOUR INFORMATION BACK");
 
-            // Text disappears
+            // Disappear
             output.style.opacity = 0;
             await new Promise(r => setTimeout(r, 1500));
 
-            // 2-second monster jumpscare
+            // Jumpscare
             document.getElementById('jumpscare').style.display = 'flex';
             document.getElementById('monster').style.opacity = 1;
             scream.play();
-
             await new Promise(r => setTimeout(r, 2000));
 
             // Hide monster
             document.getElementById('jumpscare').style.display = 'none';
 
-            // Blood red final message
+            // Final blood message
             output.innerHTML = '<div class="blood">WE ARE WATCHING</div>';
             output.style.opacity = 1;
         }
