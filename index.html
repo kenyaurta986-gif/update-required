@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Critical Error</title>
+    <title>ERROR</title>
     <style>
-        body { margin:0; background:#000; color:#f00; font-family: 'Courier New', monospace; overflow:hidden; animation: rainbow 5s infinite, glitch 0.1s infinite; }
-        @keyframes rainbow { 0%{color:#f00;} 14%{color:#ff0;} 28%{color:#0f0;} 42%{color:#0ff;} 56%{color:#00f;} 70%{color:#f0f;} 84%{color:#f00;} 100%{color:#f00;} }
-        @keyframes glitch { 0%{text-shadow: 0.05em 0 0 #f00, -0.05em 0 0 #0ff;} 14%{text-shadow: 0.05em 0 0 #f00, -0.05em 0 0 #0ff;} 15%{text-shadow: -0.05em 0 0 #f00, 0.05em 0 0 #0ff;} 49%{text-shadow: -0.05em 0 0 #f00, 0.05em 0 0 #0ff;} 50%{text-shadow: 0.05em 0.02em 0 #f00, -0.05em -0.02em 0 #0ff;} 99%{text-shadow: 0.05em 0.02em 0 #f00, -0.05em -0.02em 0 #0ff;} 100%{text-shadow: -0.05em 0 0 #f00, 0.05em 0 0 #0ff;} }
-        #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; text-align:center; font-size:25px; }
+        body { margin:0; background:#000; color:#f00; font-family: 'Courier New', monospace; overflow:hidden; }
+        #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; text-align:center; font-size:28px; animation: shake 0.5s infinite, rainbow 3s infinite; }
+        @keyframes shake { 0%,100%{transform:translate(0);} 10%,30%,50%,70%,90%{transform:translate(-15px, -15px);} 20%,40%,60%,80%{transform:translate(15px, 15px);} }
+        @keyframes rainbow { 0%{color:#f00;} 20%{color:#ff0;} 40%{color:#0f0;} 60%{color:#0ff;} 80%{color:#f0f;} 100%{color:#f00;} }
+        .blood { color:#8B0000; text-shadow: 0 0 10px #f00, 0 0 20px #f00; animation: drip 2s infinite; font-size:40px; }
+        @keyframes drip { 0%{text-shadow: 0 0 10px #f00;} 50%{text-shadow: 0 20px 20px #800;} 100%{text-shadow: 0 0 10px #f00;} }
+        #output { transition: opacity 0.5s; }
         #jumpscare { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:none; align-items:center; justify-content:center; z-index:999; }
-        #monster { width:80%; max-width:800px; opacity:0; transition:opacity 0.1s; }
+        #monster { width:95%; max-width:1200px; opacity:0; transition:opacity 0.1s; }
     </style>
 </head>
 <body oncontextmenu="return false;" onselectstart="return false;">
@@ -19,23 +22,35 @@
     </div>
 
     <div id="jumpscare">
-        <img id="monster" src="https://i.imgur.com/8O7jO.gif" alt="JUMPSCARE"> <!-- Classic scary maze/exorcist style -->
+        <img id="monster" src="https://i.imgur.com/8O7jO.gif" alt="JUMPSCARE">
     </div>
 
-    <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio> <!-- Loud classic scream -->
+    <!-- 60+ second creepy ambience -->
+    <audio id="ambience" src="https://www.free-stock-music.com/mp3/spooky-ambience.mp3" autoplay loop></audio>
+
+    <!-- Loud scream -->
+    <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio>
 
     <script>
+        const ambience = document.getElementById('ambience');
+        const scream = document.getElementById('scream');
+        const output = document.getElementById('output');
+        const terminal = document.getElementById('terminal');
+
+        ambience.volume = 0.8;
+        ambience.play();
+
         function typeLine(text, delay=60) {
             return new Promise(resolve => {
                 let i = 0;
                 const div = document.createElement('div');
-                document.getElementById('output').appendChild(div);
+                output.appendChild(div);
                 const interval = setInterval(() => {
                     div.textContent += text[i];
                     i++;
                     if (i >= text.length) {
                         clearInterval(interval);
-                        setTimeout(resolve, 800);
+                        setTimeout(resolve, 1000);
                     }
                 }, delay);
             });
@@ -52,17 +67,23 @@
             await typeLine("DO NOT CLOSE OR RESTART");
             await typeLine("WE ARE IN CONTROL NOW 😈");
 
-            // JUMPSCARE TIME
-            setTimeout(() => {
-                document.getElementById('jumpscare').style.display = 'flex';
-                document.getElementById('monster').style.opacity = 1;
-                document.getElementById('scream').play();
-                
-                // Hide after 2 seconds (or remove this for permanent scare)
-                setTimeout(() => {
-                    document.getElementById('jumpscare').style.display = 'none';
-                }, 2000);
-            }, 3000); // Triggers after messages
+            // SUDDENLY DISAPPEAR
+            output.style.opacity = 0;
+            await new Promise(r => setTimeout(r, 1500));
+
+            // JUMPSCARE - 2 seconds only
+            document.getElementById('jumpscare').style.display = 'flex';
+            document.getElementById('monster').style.opacity = 1;
+            scream.play();
+
+            await new Promise(r => setTimeout(r, 2000)); // Monster for exactly 2 seconds
+
+            // Hide monster
+            document.getElementById('jumpscare').style.display = 'none';
+
+            // Text comes back... BLOOD RED
+            output.innerHTML = '<div class="blood">WE ARE WATCHING</div>';
+            output.style.opacity = 1;
         }
 
         startPrank();
