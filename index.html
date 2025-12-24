@@ -9,19 +9,29 @@
     <style>
         html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#000; }
         body { color:#f00; font-family: 'Courier New', monospace; }
-        #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; text-align:center; font-size:28px; animation: shake 0.5s infinite, rainbow 3s infinite; }
-        @keyframes shake { 0%,100%{transform:translate(0);} 10%,30%,50%,70%,90%{transform:translate(-15px, -15px);} 20%,40%,60%,80%{transform:translate(15px, 15px);} }
-        @keyframes rainbow { 0%{color:#f00;} 20%{color:#ff0;} 40%{color:#0f0;} 60%{color:#0ff;} 80%{color:#f0f;} 100%{color:#f00;} }
+        #terminal { padding:20px; height:100vh; display:flex; flex-direction:column; justify-content:center; text-align:center; font-size:28px; }
+        .glitch { animation: colorGlitch 0.3s infinite; }
+        @keyframes colorGlitch {
+            0% { color:#f00; text-shadow: 0.05em 0 0 #f00, -0.05em -0.05em 0 #0ff; }
+            14% { color:#0f0; text-shadow: -0.05em 0 0 #0ff, 0.05em -0.05em 0 #f00; }
+            28% { color:#ff0; text-shadow: 0 0.05em 0 #f00, 0 -0.05em 0 #0ff; }
+            42% { color:#0ff; text-shadow: 0.05em 0.05em 0 #ff0, -0.05em 0 0 #f00; }
+            56% { color:#f0f; text-shadow: -0.05em 0 0 #0f0, 0.05em -0.05em 0 #ff0; }
+            70% { color:#fff; text-shadow: 0.05em 0 0 #f0f, -0.05em 0.05em 0 #0ff; }
+            84% { color:#f00; text-shadow: 0 -0.05em 0 #0ff, 0.05em 0.05em 0 #f00; }
+            100% { color:#0ff; text-shadow: -0.05em 0 0 #f00, 0.05em 0 0 #0ff; }
+        }
         .blood { color:#8B0000; text-shadow: 0 0 10px #f00, 0 0 20px #f00; animation: drip 2s infinite; font-size:40px; }
         @keyframes drip { 0%{text-shadow: 0 0 10px #f00;} 50%{text-shadow: 0 20px 20px #800;} 100%{text-shadow: 0 0 10px #f00;} }
         #output { transition: opacity 0.5s; }
+        #output > div { margin:10px 0; }
         #jumpscare { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:none; align-items:center; justify-content:center; z-index:999; }
         #monster { width:95%; max-width:1200px; opacity:0; transition:opacity 0.1s; }
     </style>
 </head>
 <body oncontextmenu="return false;" onselectstart="return false;">
     <div id="terminal">
-        <div id="output"></div>
+        <div id="output" class="glitch"></div>
     </div>
 
     <div id="jumpscare">
@@ -35,7 +45,7 @@
     <audio id="scream" src="https://www.myinstants.com/media/sounds/scary-maze-game-scream.mp3"></audio>
 
     <script>
-        // Force fullscreen to hide browser bar
+        // Force fullscreen
         function enterFullscreen() {
             const elem = document.documentElement;
             if (elem.requestFullscreen) elem.requestFullscreen();
@@ -52,17 +62,29 @@
         ambience.volume = 0.8;
         ambience.play();
 
-        // 20-second back trap
+        // Maximum 20-second back trap
         let trapActive = true;
+        for (let i = 0; i < 50; i++) history.pushState({}, '', location.href);
         const trapInterval = setInterval(() => {
-            if (trapActive) history.pushState(null, null, location.href);
-        }, 50);
-        window.onpopstate = () => { if (trapActive) history.go(1); };
+            if (trapActive) {
+                history.pushState({}, '', location.href);
+                history.pushState({}, '', location.href);
+            }
+        }, 10);
+        window.onpopstate = function() {
+            if (trapActive) {
+                history.pushState({}, '', location.href);
+                history.go(1);
+            }
+        };
         setTimeout(() => {
             trapActive = false;
             clearInterval(trapInterval);
             window.onpopstate = null;
         }, 20000);
+
+        // Fake weird wallet
+        const weirdWallet = "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"; // looks real but random
 
         // Fake IP & location
         function generateFakeIP() {
@@ -73,45 +95,50 @@
         }
         const fakeLocations = ["New York, USA", "London, UK", "Moscow, Russia", "Beijing, China", "Unknown Location", "Your Bedroom", "Hidden Basement", "Your Exact Coordinates"];
 
-        function typeLine(text, delay=70) {
+        function typeLine(text, delay = 70, fast = false) {
             return new Promise(resolve => {
                 let i = 0;
                 const div = document.createElement('div');
+                div.classList.add('glitch');
                 output.appendChild(div);
+                const speed = fast ? 20 : delay; // fast = 20ms per char
                 const interval = setInterval(() => {
                     div.textContent += text[i];
                     i++;
                     if (i >= text.length) {
                         clearInterval(interval);
-                        setTimeout(resolve, 1200);
+                        setTimeout(resolve, fast ? 500 : 1200);
                     }
-                }, delay);
+                }, speed);
             });
         }
 
         async function startPrank() {
-            await typeLine("TRACING YOUR IP ADDRESS...");
-            await typeLine("IP FOUND: " + generateFakeIP());
-            await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)]);
+            await typeLine("TRACING YOUR IP ADDRESS...", 70, true);
+            await typeLine("IP FOUND: " + generateFakeIP(), 70, true);
+            await typeLine("LOCATION DETECTED: " + fakeLocations[Math.floor(Math.random() * fakeLocations.length)], 70, true);
+            await typeLine("YOU CAN BACK THIS WEBSITE BUT YOU CAN'T EVER DELETE THIS VIRUS I'M PLANTING IN YOUR DEVICE", 70, true);
+            await typeLine("IF YOU WANT IT TO BE REMOVED THEN PAY 1 BITCOIN", 70, true);
+            await typeLine("TO: " + weirdWallet, 70, true);
+
+            // Wait 7 seconds
+            await new Promise(r => setTimeout(r, 7000));
+
+            // Normal speed hack messages
             await typeLine("YOU HAVE BEEN HACKED");
             await typeLine("I HAVE ALL YOUR INFORMATION");
             await typeLine("AND ALL OF YOUR ACCOUNTS");
-            await typeLine("PAY 1 BITCOIN TO GET YOUR INFORMATION BACK");
 
-            // Disappear
             output.style.opacity = 0;
             await new Promise(r => setTimeout(r, 1500));
 
-            // Jumpscare
             document.getElementById('jumpscare').style.display = 'flex';
             document.getElementById('monster').style.opacity = 1;
             scream.play();
             await new Promise(r => setTimeout(r, 2000));
 
-            // Hide monster
             document.getElementById('jumpscare').style.display = 'none';
 
-            // Final blood message
             output.innerHTML = '<div class="blood">WE ARE WATCHING</div>';
             output.style.opacity = 1;
         }
